@@ -160,15 +160,14 @@ class TLSAdapter(requests.adapters.HTTPAdapter):
     We have extracted the relevant value from <openssl/ssl.h>.
 
     '''
+    def __init__(self, ssl_context=None, **kwargs):
+        self.ssl_context = ssl_context
+        super().__init__(**kwargs)
+        
     def init_poolmanager(self, connections, maxsize, block=False):
-        ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-        ssl_context.set_ciphers('DEFAULT:@SECLEVEL=1')
-        ssl_context.options |= 1<<2  # OP_LEGACY_SERVER_CONNECT
-        self.poolmanager = urllib3.PoolManager(
-                num_pools=connections,
-                maxsize=maxsize,
-                block=block,
-                ssl_context=ssl_context)
+        self.poolmanager = urllib3.poolmanager.PoolManager(
+            num_pools=connections, maxsize=maxsize,
+            block=block, ssl_context=self.ssl_context)
 
 def parse_args(args = None):
     pf2clientos = dict(linux='Linux', darwin='Mac', win32='Windows', cygwin='Windows')
@@ -229,7 +228,9 @@ def parse_args(args = None):
 
 def main(args = None):
     p, args = parse_args(args)
-
+    
+    ctx = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
+    ctx.options |= 0x4  # OP_LEGACY_SERVER_CONNECT
     s = requests.Session()
     if args.insecure:
         s.mount('https://', TLSAdapter())
