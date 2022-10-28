@@ -332,6 +332,7 @@ def main(args = None):
         server
     ] + args.openconnect_extra
 
+    openconnect_args.insert(1, "--allow-insecure-crypto")
     if args.insecure:
         openconnect_args.insert(1, "--allow-insecure-crypto")
     if args.user_agent:
