@@ -233,7 +233,7 @@ def main(args = None):
     ctx.options |= 0x4  # OP_LEGACY_SERVER_CONNECT
     s = requests.Session()
     if args.insecure:
-        s.mount('https://', TLSAdapter())
+        s.mount('https://', TLSAdapter(), verify=False)
     s.headers['User-Agent'] = 'PAN GlobalProtect' if args.user_agent is None else args.user_agent
     s.cert = args.cert
 
